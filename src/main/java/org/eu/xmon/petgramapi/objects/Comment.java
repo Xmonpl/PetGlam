@@ -11,10 +11,10 @@ import java.util.UUID;
  */
 @Data
 public class Comment {
-    private UUID comment_id;
-    private UUID post_id;
-    private UUID author_id;
-    private List<UUID> likes;
+    private String comment_id;
+    private String post_id;
+    private String author_id;
+    private List<String> likes;
     private String comment;
 
 

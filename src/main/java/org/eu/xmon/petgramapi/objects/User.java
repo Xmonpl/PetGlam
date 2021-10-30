@@ -21,7 +21,6 @@ import java.util.UUID;
 @Table(name = "users")
 public class User {
     @Id
-    @GeneratedValue
     @Getter(AccessLevel.NONE)
     @Setter(AccessLevel.NONE)
     public String id;

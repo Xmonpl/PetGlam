@@ -133,6 +133,14 @@ public class WebInitializer {
             return jsonObject.toString();
         });
 
+        get("/api/v1/user/logout", (request, response) -> {
+            response.removeCookie("/", "token");
+            response.removeCookie("/", "uuid");
+            final JSONObject jsonObject = new JSONObject();
+            jsonObject.put("success", true);
+            return jsonObject.toString();
+        });
+
         /**
          * @Input emailOrPhone, fullName, username, password
          */

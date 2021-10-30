@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+        <form method="POST" action="/api/v1/user/create">
+            <p>Numer telefonu komórkowego lub adres e-mail</p>
+            <input aria-label="Numer telefonu komórkowego lub adres e-mail" aria-required="true" autocapitalize="off" autocomplete="tel" autocorrect="off" name="emailOrPhone" type="text" value="">
+            <br /><br />
+            <p>Imię i nazwisko</p>
+            <input aria-label="Imię i nazwisko" aria-required="false" autocapitalize="sentences" autocorrect="off" name="fullName" type="text" cvalue="">
+            <br /><br />
+            <p>Nazwa użytkownika</p>
+            <input aria-label="Nazwa użytkownika" aria-required="true" autocapitalize="off" autocorrect="off" maxlength="30" name="username" type="text" value="">
+            <br /><br />
+            <p>Haslo</p>
+            <input aria-label="Hasło" aria-required="true" autocapitalize="off" autocomplete="new-password" autocorrect="off" name="password" type="password" cvalue="">
+            <br /><br />
+            <p>Data urodzin</p>
+            <input aria-label="Data urodzin" aria-required="true" autocapitalize="off" autocomplete="birthday" autocorrect="off" name="birthday" type="date" cvalue="">
+            <br />
+            <input type="submit">
+
+        </form>
+</body>
+</html>

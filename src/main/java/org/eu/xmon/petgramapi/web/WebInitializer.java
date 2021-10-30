@@ -26,17 +26,66 @@ public class WebInitializer {
         // ########################## VIEW SECTION ########################################
 
         get("/accounts/signup", (request, response) -> {
-            final Map<String, Object> model = new HashMap<>();
-            return new VelocityTemplateEngine().render(
-                    new ModelAndView(model, "private/register.html")
-            );
+            if (request.cookie("uuid") != null && request.cookie("token") != null ){
+                final BCrypt.Result result = BCrypt.verifyer().verify((request.cookie("uuid") + "-" + request.ip()).toCharArray(), request.cookie("token"));
+                if (result.verified){
+                    response.redirect("/");
+                    return null;
+                }else{
+                    final Map<String, Object> model = new HashMap<>();
+                    return new VelocityTemplateEngine().render(
+                            new ModelAndView(model, "private/register.html")
+                    );
+                }
+            }else {
+                final Map<String, Object> model = new HashMap<>();
+                return new VelocityTemplateEngine().render(
+                        new ModelAndView(model, "private/register.html")
+                );
+            }
+        });
+
+        get("/", (request, response) -> {
+            if (request.cookie("uuid") != null && request.cookie("token") != null ){
+                final BCrypt.Result result = BCrypt.verifyer().verify((request.cookie("uuid") + "-" + request.ip()).toCharArray(), request.cookie("token"));
+                if (result.verified){
+                    final Map<String, Object> model = new HashMap<>();
+                    model.put("user", DbConnect.getDatabase().sql("SELECT * FROM users WHERE id = ?", request.cookie("uuid")).first(User.class).toString());
+                    return new VelocityTemplateEngine().render(
+                            new ModelAndView(model, "private/main.html")
+                    );
+                }else{
+                    final Map<String, Object> model = new HashMap<>();
+                    return new VelocityTemplateEngine().render(
+                            new ModelAndView(model, "private/login.html")
+                    );
+                }
+            }else {
+                final Map<String, Object> model = new HashMap<>();
+                return new VelocityTemplateEngine().render(
+                        new ModelAndView(model, "private/register.html")
+                );
+            }
         });
 
         get("/accounts/signin", (request, response) -> {
-            final Map<String, Object> model = new HashMap<>();
-            return new VelocityTemplateEngine().render(
-                    new ModelAndView(model, "private/login.html")
-            );
+            if (request.cookie("uuid") != null && request.cookie("token") != null ){
+                final BCrypt.Result result = BCrypt.verifyer().verify((request.cookie("uuid") + "-" + request.ip()).toCharArray(), request.cookie("token"));
+                if (result.verified){
+                    response.redirect("/");
+                    return null;
+                }else{
+                    final Map<String, Object> model = new HashMap<>();
+                    return new VelocityTemplateEngine().render(
+                            new ModelAndView(model, "private/login.html")
+                    );
+                }
+            }else {
+                final Map<String, Object> model = new HashMap<>();
+                return new VelocityTemplateEngine().render(
+                        new ModelAndView(model, "private/login.html")
+                );
+            }
         });
 
         // ########################## API SECTION #########################################
@@ -70,8 +119,14 @@ public class WebInitializer {
             }
 
             jsonObject.put("success", true);
-            jsonObject.put("uuid", user.getId());
+            jsonObject.put("uuid", user.id);
             jsonObject.put("username", user.getUsername());
+
+            user.setLast_ip(request.ip());
+            DbConnect.getDatabase().update(user);
+
+            response.cookie("/", "token", BCrypt.withDefaults().hashToString(6, (user.id + "-" + request.ip()).toCharArray()), 3600,false, true);
+            response.cookie("/", "uuid", user.id, 3600,false, true);
 
             System.out.println("[+-] SignIn User - " + user.toString());
 
@@ -122,7 +177,7 @@ public class WebInitializer {
             DbConnect.getDatabase().insert(user);
 
             jsonObject.put("success", true);
-            jsonObject.put("uuid", user.getId());
+            jsonObject.put("uuid", user.id);
             jsonObject.put("username", user.getUsername());
             System.out.println("[+] New User - " + user.toString());
             return jsonObject.toString();

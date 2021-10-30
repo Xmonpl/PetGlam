@@ -21,7 +21,10 @@ import java.util.UUID;
 @Table(name = "users")
 public class User {
     @Id
-    private String id;
+    @GeneratedValue
+    @Getter(AccessLevel.NONE)
+    @Setter(AccessLevel.NONE)
+    public String id;
 
     @Column(name = "username")
     private String username;

@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>PetGram.eu.org</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bulma/0.9.3/css/bulma.min.css" integrity="sha512-IgmDkwzs96t4SrChW29No3NXBIBv8baW490zk5aXvhCD8vuZM3yUSkbyTBcXohkySecyzIrUwiF/qV0cuPcL3Q==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta2/css/all.min.css" integrity="sha512-YWzhKL2whUzgiheMoBFwW8CKV4qpHQAEuvilg9FAn5VJUDwKZZxkJNuGM4XkWuk94WCrrwslk8yWNGmY1EduTA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <style>
+        :root{
+            --pet-main: #FF6363;
+            --pet-secound: #00BFA6;
+            
+        }
+        body {
+        display: flex;
+        min-height: 100vh;
+        flex-direction: column; 
+        }
+        .section.is-large {
+            padding: 18rem 6rem 7rem 6rem !important;
+        }
+        #wrapper {
+            flex: 10%;
+        }
+    </style>
+  </head>
+  <body>
+    <div id="wrapper">
+        <section class="section is-large">
+            <div class="container">
+                <div class="columns">
+                    <div class="column">
+                        <figure class="image is-16by9">
+                            <img src="/img/friends.svg" alt="Welcome SVG"/>
+                        </figure>
+                    </div>
+                    <div class="column">
+                        <form class="box" id="login-form">
+                            <h2 class="title pl-2">Register to PetGlam.eu.org</h2>
+                            <div class="field">
+                            <p class="control has-icons-left has-icons-right">
+                                <input class="input" type="email" placeholder="Email" name="emailOrPhone" id="emailOrPhone">
+                                <span class="icon is-small is-left">
+                                  <i class="fas fa-envelope"></i>
+                                </span>
+                              </p>
+                            </div>
+                            <div class="field">
+                              <p class="control has-icons-left">
+                                <input class="input" type="password" placeholder="Your easy password" name="password" id="password">
+                                <span class="icon is-small is-left">
+                                  <i class="fas fa-lock"></i>
+                                </span>
+                              </p>
+                            </div>
+                            <div class="field">
+                                <p class="control has-icons-left has-icons-right">
+                                    <input class="input" type="text" placeholder="Personal data of the owner" name="fullName" id="fullName">
+                                    <span class="icon is-small is-left">
+                                      <i class="fas fa-user-alt"></i>
+                                    </span>
+                                  </p>
+                            </div>
+                            <div class="field">
+                                <p class="control has-icons-left has-icons-right">
+                                    <input class="input" type="text" placeholder="Name of the pet" name="username" id="username">
+                                    <span class="icon is-small is-left">
+                                      <i class="fas fa-user-secret"></i>
+                                    </span>
+                                </p>
+                            </div>
+                            <div class="field">
+                                <p class="control has-icons-left has-icons-right">
+                                    <input class="input" type="date" placeholder="Birthday" name="birthday" id="birthday">
+                                    <span class="icon is-small is-left">
+                                      <i class="fas far fa-calendar-alt"></i>
+                                    </span>
+                                  </p>
+                            </div>
+                            <button type="submit" class="button is-primary" style="background-color: var(--pet-main);">Sign Up &nbsp;<i class="fas fa-user-plus"></i></button>
+                            <a class="button is-primary" style="background-color: var(--pet-secound);" href="/accounts/login">Log In &nbsp;<i class="fas fa-sign-in-alt"></i></a>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+    <footer class="footer">
+        <div class="content has-text-centered" >
+            <p>
+                <strong>PetGlam.eu.org</strong> by <a href="https://xmon.eu.org">Dominik /Xmon/ Dobosz</a>.<br />
+                Made with <a href="https://bulma.io/">Bulma.io</a> 💙.
+            </p>
+        </div>
+    </footer>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js" integrity="sha512-894YE6QWD5I59HgZOGReFYm4dnWc1Qt5NtvYSaNcOP+u1T9qYdvdihz0PPSiiqn/+/3e7Jo4EaG7TubfWGUrMQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <script>
+        const thisForm = document.getElementById('login-form');
+        $( "#login-form" ).submit(async function (e) {
+            e.preventDefault();
+            $.ajax({
+                method:"POST",
+                url: "http://localhost/api/v1/user/create",
+                data: {"emailOrPhone": document.getElementById("emailOrPhone").value, "fullName": document.getElementById("fullName").value, "username": document.getElementById("username").value, "password": document.getElementById("password").value, "birthday": document.getElementById("birthday").value}
+            }).done(function(response){
+                var returnedData = JSON.parse(response);
+                if (returnedData['success']) {
+                    window.location.replace("http://localhost/");
+                } else {
+                    alert("Nie prawidłowe dane");
+                }
+            });
+        });
+    </script>
+  </body>
+</html>

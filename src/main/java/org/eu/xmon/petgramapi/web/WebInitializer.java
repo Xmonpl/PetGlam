@@ -4,6 +4,7 @@ import at.favre.lib.crypto.bcrypt.BCrypt;
 import org.eu.xmon.petgramapi.database.DbConnect;
 import org.eu.xmon.petgramapi.objects.Post;
 import org.eu.xmon.petgramapi.objects.User;
+import org.eu.xmon.petgramapi.utils.DebugUtils;
 import org.eu.xmon.petgramapi.utils.PostImageUtils;
 import org.json.JSONObject;
 import spark.ModelAndView;
@@ -41,13 +42,13 @@ public class WebInitializer {
                 }else{
                     final Map<String, Object> model = new HashMap<>();
                     return new VelocityTemplateEngine().render(
-                            new ModelAndView(model, "private/register.html")
+                            new ModelAndView(model, "private/signup.html")
                     );
                 }
             }else {
                 final Map<String, Object> model = new HashMap<>();
                 return new VelocityTemplateEngine().render(
-                        new ModelAndView(model, "private/register.html")
+                        new ModelAndView(model, "private/signup.html")
                 );
             }
         });
@@ -80,12 +81,12 @@ public class WebInitializer {
             }else {
                 final Map<String, Object> model = new HashMap<>();
                 return new VelocityTemplateEngine().render(
-                        new ModelAndView(model, "private/register.html")
+                        new ModelAndView(model, "private/signup.html")
                 );
             }
         });
 
-        get("/accounts/signin", (request, response) -> {
+        get("/accounts/login", (request, response) -> {
             if (request.cookie("uuid") != null && request.cookie("token") != null ){
                 final BCrypt.Result result = BCrypt.verifyer().verify((request.cookie("uuid") + "-" + request.ip()).toCharArray(), request.cookie("token"));
                 if (result.verified){
@@ -219,7 +220,6 @@ public class WebInitializer {
          */
         post("/api/v1/user/create", (request, response) -> {
             final JSONObject jsonObject = new JSONObject();
-
             if (request.queryParams("emailOrPhone") == null || request.queryParams("fullName") == null || request.queryParams("username") == null || request.queryParams("password") == null || request.queryParams("birthday") == null) {
                 jsonObject.put("success", false);
                 jsonObject.put("error", "inputs is blanks!");

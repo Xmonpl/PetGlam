@@ -2,10 +2,8 @@ package org.eu.xmon.petgramapi.objects;
 
 import lombok.*;
 
-import javax.persistence.Column;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
-import javax.persistence.Table;
+import javax.persistence.*;
+import java.io.Serializable;
 import java.sql.Timestamp;
 import java.util.List;
 import java.util.UUID;
@@ -19,7 +17,7 @@ import java.util.UUID;
 @AllArgsConstructor
 @RequiredArgsConstructor
 @Table(name = "users")
-public class User {
+public class User implements Serializable {
     @Id
     @Getter(AccessLevel.NONE)
     @Setter(AccessLevel.NONE)
@@ -47,16 +45,16 @@ public class User {
     private String last_ip;
 
     @Column(name = "posts")
-    private List<UUID> posts;
+    private String posts;
 
     @Column(name = "biography")
     private String biography;
 
     @Column(name = "followers")
-    private List<UUID> followers;
+    private String followers;
 
     @Column(name = "following")
-    private List<UUID> following;
+    private String following;
 
     @Column(name = "sex")
     private String sex;

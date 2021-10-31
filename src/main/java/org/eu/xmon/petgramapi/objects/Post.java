@@ -1,10 +1,9 @@
 package org.eu.xmon.petgramapi.objects;
 
 import lombok.*;
+import org.json.JSONArray;
 
-import javax.persistence.Column;
-import javax.persistence.Id;
-import javax.persistence.Table;
+import javax.persistence.*;
 import java.sql.Timestamp;
 import java.util.List;
 import java.util.UUID;
@@ -22,6 +21,7 @@ public class Post {
     @Id
     @Getter(AccessLevel.NONE)
     @Setter(AccessLevel.NONE)
+    @PrimaryKeyJoinColumn
     public String post_id;
 
     @Column(name = "author_id")
@@ -31,11 +31,15 @@ public class Post {
     private String create_time;
 
     @Column(name = "likes")
-    private List<String> likes;
+    private String likes;
 
     @Column(name = "description")
     private String description;
 
     @Column(name = "comments")
-    private List<String> comments;
+    private String comments;
+
+    @Column(name = "images")
+    private String image_url;
+
 }

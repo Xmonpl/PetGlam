@@ -2,18 +2,25 @@ package org.eu.xmon.petgramapi.web;
 
 import at.favre.lib.crypto.bcrypt.BCrypt;
 import org.eu.xmon.petgramapi.database.DbConnect;
+import org.eu.xmon.petgramapi.objects.Post;
 import org.eu.xmon.petgramapi.objects.User;
+import org.eu.xmon.petgramapi.utils.PostImageUtils;
 import org.json.JSONObject;
 import spark.ModelAndView;
 import spark.template.velocity.VelocityTemplateEngine;
 
+import javax.servlet.MultipartConfigElement;
+import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.Part;
+import java.io.File;
+import java.nio.file.Files;
 import java.sql.Timestamp;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 
 import static spark.Spark.*;
 public class WebInitializer {
+
+    public static String DOMAIN = "http://localhost";
 
     /**
      * @apiNote create Web Server
@@ -49,11 +56,21 @@ public class WebInitializer {
             if (request.cookie("uuid") != null && request.cookie("token") != null ){
                 final BCrypt.Result result = BCrypt.verifyer().verify((request.cookie("uuid") + "-" + request.ip()).toCharArray(), request.cookie("token"));
                 if (result.verified){
-                    final Map<String, Object> model = new HashMap<>();
-                    model.put("user", DbConnect.getDatabase().sql("SELECT * FROM users WHERE id = ?", request.cookie("uuid")).first(User.class).toString());
-                    return new VelocityTemplateEngine().render(
-                            new ModelAndView(model, "private/main.html")
-                    );
+                    final User u = DbConnect.getDatabase().sql("SELECT * FROM users WHERE id = ?", request.cookie("uuid")).first(User.class);
+                    if (u == null){
+                        response.removeCookie("/", "token");
+                        response.removeCookie("/", "uuid");
+                        final Map<String, Object> model = new HashMap<>();
+                        return new VelocityTemplateEngine().render(
+                                new ModelAndView(model, "private/login.html")
+                        );
+                    }else {
+                        final Map<String, Object> model = new HashMap<>();
+                        model.put("user", u);
+                        return new VelocityTemplateEngine().render(
+                                new ModelAndView(model, "private/main.html")
+                        );
+                    }
                 }else{
                     final Map<String, Object> model = new HashMap<>();
                     return new VelocityTemplateEngine().render(
@@ -141,6 +158,62 @@ public class WebInitializer {
             return jsonObject.toString();
         });
 
+        get("/cdn/:author/:post/:file", (request, response) -> {
+            if (request.params("author") != null && request.params("post") != null && request.params("file") != null){
+                final File file = new File("users/" + request.params("author") + "/" + request.params("post") + "/" + request.params("file"));
+                if (file.exists()){
+                    final HttpServletResponse raw = response.raw();
+                    raw.getOutputStream().write(Files.readAllBytes(file.toPath()));
+                    raw.getOutputStream().flush();
+                    raw.getOutputStream().close();
+                    response.status(200);
+                    return raw;
+                }else{
+                    response.status(404);
+                    return null;
+                }
+            }else {
+                response.status(404);
+                return null;
+            }
+        });
+
+        /**
+        * @Input file, description,
+        */
+        post("/api/v1/post/create", (request, response) -> {
+            final JSONObject jsonObject = new JSONObject();
+
+            request.attribute("org.eclipse.jetty.multipartConfig", new MultipartConfigElement("/temp"));
+            Part filePart = request.raw().getPart("file");
+
+            if (request.cookie("uuid") != null && request.cookie("token") != null && filePart != null && request.queryParams("description") != null) {
+                final BCrypt.Result result = BCrypt.verifyer().verify((request.cookie("uuid") + "-" + request.ip()).toCharArray(), request.cookie("token"));
+                if (result.verified) {
+                    var post = Post.builder()
+                                    .post_id(UUID.randomUUID().toString())
+                                    .author_id(request.cookie("uuid"))
+                                    .create_time(new Timestamp(System.currentTimeMillis()).toString())
+                                    .description(request.queryParams("description"))
+                                    .build();
+                    DbConnect.getDatabase().insert(post);
+                    PostImageUtils.addImageToPost(filePart.getInputStream().readAllBytes(), post, filePart.getSubmittedFileName());
+                    jsonObject.put("success", true);
+                    jsonObject.put("post_id", post.post_id);
+                    jsonObject.put("author_id", post.getAuthor_id());
+                    return jsonObject.toString();
+                }else{
+                    response.removeCookie("/", "token");
+                    response.removeCookie("/", "uuid");
+                }
+            }
+
+            jsonObject.put("success", false);
+            jsonObject.put("error", "incorrect token or file is empty!");
+            return jsonObject.toString();
+        });
+
+
         /**
          * @Input emailOrPhone, fullName, username, password
          */
@@ -177,12 +250,16 @@ public class WebInitializer {
                     .full_name(request.queryParams("fullName"))
                     .username(request.queryParams("username"))
                     .last_ip(request.ip())
+                    .posts("[]")
                     .biography("PetGram 😎🤙")
                     .sex("undefined")
                     .password(BCrypt.withDefaults().hashToString(12, request.queryParams("password").toCharArray()))
                     .build();
 
             DbConnect.getDatabase().insert(user);
+
+            response.cookie("/", "token", BCrypt.withDefaults().hashToString(6, (user.id + "-" + request.ip()).toCharArray()), 3600,false, true);
+            response.cookie("/", "uuid", user.id, 3600,false, true);
 
             jsonObject.put("success", true);
             jsonObject.put("uuid", user.id);
